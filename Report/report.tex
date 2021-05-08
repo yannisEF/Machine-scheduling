@@ -1,0 +1,299 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% DOCUMENT PREAMBLE %%%
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc}
+%\usepackage{natbib}
+\usepackage{url}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{vmargin}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\setmarginsrb{2 cm}{2.5 cm}{2 cm}{2.5 cm}{1 cm}{1.5 cm}{1 cm}{1.5 cm}
+
+\usepackage{blindtext}
+\usepackage{tcolorbox}
+\tcbuselibrary{minted,breakable,xparse,skins}
+
+\definecolor{bg}{gray}{0.95}
+\DeclareTCBListing{mintedbox}{O{}m!O{}}{%
+  breakable=true,
+  listing engine=minted,
+  listing only,
+  minted language=#2,
+  minted style=default,
+  minted options={%
+    linenos,
+    gobble=0,
+    breaklines=true,
+    breakafter=,,
+    fontsize=\small,
+    numbersep=8pt,
+    #1},
+  boxsep=0pt,
+  left skip=0pt,
+  right skip=0pt,
+  left=25pt,
+  right=0pt,
+  top=3pt,
+  bottom=3pt,
+  arc=5pt,
+  leftrule=0pt,
+  rightrule=0pt,
+  bottomrule=2pt,
+  toprule=2pt,
+  colback=bg,
+  colframe=orange!70,
+  enhanced,
+  overlay={%
+    \begin{tcbclipinterior}
+    \fill[orange!20!white] (frame.south west) rectangle ([xshift=20pt]frame.north west);
+    \end{tcbclipinterior}},
+  #3}
+
+\title{Rapport de projet}
+% Title
+\author{
+Yannis Elrharbi-Fleury \\
+Yuan Fangzheng
+}						
+% Author
+\date{25/05/2021}
+% Date
+
+\setcounter{secnumdepth}{4}
+
+\makeatletter
+\let\thetitle\@title
+\let\theauthor\@author
+\let\thedate\@date
+\makeatother
+
+\pagestyle{fancy}
+\rhead{\thedate}
+\lhead{\thetitle}
+\cfoot{\thepage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\bibliographystyle{IEEEtran}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{titlepage}
+	\centering
+    \vspace*{0.5 cm}
+   \includegraphics[scale = 0.075]{Images/logo_SU.jpeg}\\[1.0 cm]	% University Logo
+\begin{center}    \textsc{\Large   Sorbonne Université}\\[2.0 cm]	\end{center}% University Name
+	\textsc{\Large Résolution de problème : problème d'ordonnancement}\\[0.5 cm]				% Course Code
+	\rule{\linewidth}{0.2 mm} \\[0.4 cm]
+	{ \huge \bfseries \thetitle}\\
+	\rule{\linewidth}{0.2 mm} \\[1.5 cm]
+	
+	\begin{minipage}{0.4\textwidth}
+		\begin{flushleft} \large
+		\emph{Encadrant :}\\
+		Evripidis Bampis\\
+		\textbf{\Large }
+			\end{flushleft}
+			\end{minipage}~
+			\begin{minipage}{0.4\textwidth}
+            
+			\begin{flushright} \large
+			\emph{Étudiants :}\\
+			\theauthor
+		\end{flushright}
+           
+	\end{minipage}\\[2 cm]
+	
+\end{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage																		
+\renewcommand*\contentsname{Table des Matières}
+\tableofcontents 
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setlength{\parindent}{2ex}
+
+\section{Introduction}
+Ce projet porte sur l'étude de solutions au problème d'ordonnancement. \par
+
+Étant donné $N$ tâches et $1$ machine, il s'agit de trouver un ordonnancement de ces tâches minimisant la somme de leur temps de complétude (minimiser le temps d'attente total). \par
+
+La machine ne connaît pas forcément leur durée d'exécution réelle. \par
+
+Dans ce rapport, nous étudions et mesurons la qualité de plusieurs solutions en fonction de l'erreur de prédiction. \\
+
+Le code est écrit en Python et sera fourni en annexe.
+
+\newpage
+\section{Structure du programme}
+
+Nous avons naturellement opté pour une approche orientée objet du problème.
+
+\subsection{Les distibutions}
+La classe \emph{Distribution} représente un ensemble de distributions de probabilité et leurs paramètres. \\
+
+Lors de son instanciation, elle prend en argument des fonctions permettant de générer un tuple de valeurs. \\
+
+La méthode \emph{sample} renvoie un tuple contenant :
+\begin{itemize}
+	\item une durée réelle
+	\item une durée erreur de prédiction
+	\item un instant d'arrivée
+\end{itemize}
+
+%% DECRIRE CHOIX DE DISTRIBUTION
+
+\subsection{Les tâches}
+La classe \emph{Task} représente une tâche, dont les attributs sont générés à partir d'un objet de type \emph{Distribution}. \\
+
+Elle possède notamment comme attributs :
+\begin{itemize}
+	\item un ensemble de durée : durée réelle, durée prédite (générées à partir de \emph{Distribution})
+	\item un état : \emph{paused, running, finished, not available}
+	\item un curseur \emph{currentStep} permettant d'avancer dans l'exécution de la tâche
+	\item un numéro d'identification 
+\end{itemize}
+
+Une tâche possède trois méthodes :
+\begin{itemize}
+	\item \emph{hasFinished} : renvoie si la tâche est achevée ou non
+	\item \emph{forward} : exécute la tâche d'un pas de temps, renvoie une exécution de \emph{hasFinished}
+	\item \emph{restart} : réinitialise la tâche à son état initial
+\end{itemize}
+
+\subsection{Les machines}
+Notre idée était de créer une classe \emph{Machine} représentant une machine capable de travailler sur un ensemble de tâches. Les différents algorithmes que nous présenterons dans la partie suivante en héritent. \\
+
+Chaque machine possède notamment comme attributs :
+\begin{itemize}
+	\item des dictionnaires de tâches à différents états : \emph{allTasks, workingTasks, pausedTasks, finishedTasks}
+	\item une vitesse d'exécution
+	\item une horloge donnant le temps de la machine
+	\item une clée d'affichage (une fonction lmabda) permettant de trier les tâches de la machine lors de son affichage
+\end{itemize}
+
+Ainsi, \emph{Machine} possède plusieurs méthodes concernant ses tâches : ajouter ou supprimer des tâches; démarrer, mettre en pause ou terminer une tâche. \\
+
+Elle possède aussi des méthodes permettant de les traîter :
+\begin{itemize}
+	\item une méthode de travail \emph{work} faisant travailler les tâches sur un pas de temps de la machine
+	\item une méthode abstraite de traitement \emph{run} traîtant les tâches avant chaque étape de travail, elle permet d'introduire l'algorithme de la machine
+	\item une méthode de démarrage \emph{boot} démarrant la machine et la faisant tourner jusqu'à ce que toutes ses tâches soient terminées
+\end{itemize}
+
+\subsection{Les machines parallèles}
+La classe \emph{Parallel} fonctionne de façon analogue à \emph{Machine}, à ceci près qu'elle ne fournit pas le travail aux tâches elle même. \\
+
+Le travail sur les tâches est effectué par deux machines (\emph{Prediction} et \emph{Round-Robin}) que possède \emph{Parallel}, les exécutant avec une vitesse $\lambda$ et $1 - \lambda$.
+
+\newpage
+\section{Implémentation des algorithmes}
+
+Grâce à notre refléxion claire sur les structures de données, nous avons pu facilement implémenter les aglorithmes demandés. \\
+
+Dans cette partie, nous nous contenterons de présenter le fonctionnement de ceux-ci. Nous étudierons leurs performances dans la prochaine section. \\
+
+Les algorithmes suivant héritent de \emph{Machine} ou \emph{Parallel} et ne font que surchager la méthode \emph{run}. \\
+
+\subsection{Algorithme optimal : Shortest processing time}
+
+L'agorithme \emph{SPT} est un algorithme optimal pour ce problème. \\
+
+Il connaît la durée réelles des tâches et les exécute de la plus courte à la plus grande. \\ 
+
+\begin{mintedbox}{python}
+    def run(self, step):
+        if len(self.workingTasks) == 0:
+            nextTask = sorted(list(self.pausedTasks.values()), key=lambda x:x.realLength)[0]
+            self.startTask(nextTask)
+        return self.work(step)
+\end{mintedbox}
+
+Sa méthode \emph{run} est claire : si aucune tâche n'est en cours d'exécution, alors la machine exécute la plus courte.
+
+\subsection{Exécution par prédiction}
+
+Pour l'algorithme \emph{Prediction}, la machine n'a pas accès aux durées réelles des tâches. Elle ne connait que leur durée prédite, avec par conséquent une certaine erreur. \\
+
+\begin{mintedbox}{python}
+    def run(self, step):
+        if len(self.workingTasks) == 0:
+            nextTask = sorted(list(self.pausedTasks.values()), key=lambda x:x.predLength)[0]
+            self.startTask(nextTask)
+        return self.work(step)
+\end{mintedbox}
+
+La méthode est quasiment identique à l'algorithme précédent, à ceci près que les tâches sont triées en fonction de leur durée prédite.
+
+\subsection{Round-Robin}
+
+L'algorithme \emph{Round-Robin} partage son travail de façon égale entre les tâches. \\
+
+Cet algorithme est utile dans le cas où les prédictions sont mauvaises, car il possède un rapport de compétitivité $\max_i {\frac {A(I)} {OPT(I)}}$ de $2$. \\
+
+Notre implémentation se déroule en deux phases : l'initialisation (toutes les tâches démarrent) et l'exécution (\emph{run}). \\
+
+\begin{mintedbox}{python}
+    def _initRun(self):
+        for task in self.allTasks.values():
+            self.startTask(task)
+            
+    def run(self, step):
+        if self.currentTime == 0:
+            self._initRun()
+
+        self.speed = self.initSpeed / len(self.workingTasks)
+        return self.work(step)
+\end{mintedbox}
+
+Il suffit de changer la vitesse de la machine en fonction du nombre de tâches restantes à chaque pas de temps.
+
+\subsection{Exécution parallèle}
+
+Comme vu précédemment, \emph{Parallel} exécute \emph{Predicition} et \emph{Round-Robin} aux vitesses $\lambda$ et $1 - \lambda$. \\
+
+Ainsi, lors de l'initialisation de la machine, on définit ses sous-machines :
+\begin{mintedbox}{python}
+        self.speed = speed
+        self.prediction = Prediction(speed * lmb, key)
+        self.roundRobin = RoundRobin(speed * (1-lmb), key)
+\end{mintedbox}
+
+Les deux machines possèdent les même tâches en référence, et travaillent ensemble à leur avancement. \\
+
+La méthode \emph{run} prend la forme suivante :
+\begin{mintedbox}{python}
+    def run(self, step):
+        self.currentStep += step
+
+        self.finishTasks()
+
+        if not bool(self):
+            self.prediction.run(step)
+            self.roundRobin.run(step)
+
+        return bool(self)
+        
+    def __bool__(self):
+        return bool(self.prediction) or bool(self.roundRobin)
+\end{mintedbox}
+
+Avec les méthodes \emph{bool} renvoyant si les machines ont fini leur exécution ou non.
+
+\subsection{Exécution parallèle dynamique}
+
+%% A FINIR DE REDIGER
+
+\newpage
+\section{Résulats expérimentaux}
+\subsection{Cadre classique}
+\subsection{Introduction des dates d'arrivée}
+
+
+\end{document}
