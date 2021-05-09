@@ -1,6 +1,4 @@
-import random
 
-from distribution import Distribution
 from task import Task
 from machine import Machine
 
@@ -12,7 +10,7 @@ class Prediction(Machine):
         Machine.__init__(self, speed, key, name) 
     
     def run(self, step):
-        if len(self.workingTasks) == 0:
+        if len(self.workingTasks) == 0 and len(self.pausedTasks) != 0:
             nextTask = sorted(list(self.pausedTasks.values()), key=lambda x:x.predLength)[0]
             self.startTask(nextTask)
         return self.work(step)
@@ -20,7 +18,7 @@ class Prediction(Machine):
 if __name__ == "__main__":
     from distribution import distrib
 
-    tasks = [Task(distrib) for _ in range(38)]
+    tasks = [Task(distrib) for _ in range(5)]
 
     m = Prediction(key=lambda t: t.realLength)
 

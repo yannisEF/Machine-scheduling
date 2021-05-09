@@ -1,6 +1,4 @@
-import random
 
-from distribution import Distribution
 from task import Task
 from utils import clearPrint
 
@@ -68,8 +66,8 @@ class Machine:
         Adds a task to the working set
         if currentTime is less than newTask's arrivalTime, startTask fails
         """
-        #if self.currentTime < newTask.arrivalTime:
-        #    return
+        if self.currentTime < newTask.arrivalTime:
+            raise RuntimeError("currentTime < arrivalTime")
         newTask.status = "working"
         newTask.paused = False
         self.workingTasks[newTask.id] = newTask
@@ -119,17 +117,18 @@ class Machine:
             if self.progressBar is not None:    self.progressBar.next()
             self.finishTask(task)
         
-        for notAvailableTask in self.notAvailableTasks.values():
+        L = list(self.notAvailableTasks.keys())
+        #for notAvailableTask in self.notAvailableTasks.values():
+        for notAvailableTaskid in L:
+            if notAvailableTaskid in self.pausedTasks:
+                raise RuntimeError()
+            notAvailableTask = self.notAvailableTasks[notAvailableTaskid]
+            
             if self.currentTime >= notAvailableTask.arrivalTime:
-                if notAvailableTask.id in self.pausedTasks:
-                    raise RuntimeError()
-
                 notAvailableTask.paused = True
                 notAvailableTask.status = "paused"
                 self.pausedTasks[notAvailableTask.id] = notAvailableTask
-
-                #self._removeFromDic(self.notAvailableTasks, notAvailableTask.id)
-                notAvailableTask.arrivalTime = float('inf')
+                self._removeFromDic(self.notAvailableTasks, notAvailableTaskid)
 
         return bool(self)
     

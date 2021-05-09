@@ -12,7 +12,6 @@ class Task:
         # paused, working, finished, notAvailable
         self.status = "notAvailable"
         
-        
         self.paused = False
 
         self.finished = False

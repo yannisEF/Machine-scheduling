@@ -1,6 +1,4 @@
-import random
 
-from distribution import Distribution
 from task import Task
 from utils import clearPrint
 from machine_prediction import Prediction
@@ -16,15 +14,14 @@ class Parallel:
         self.id = Parallel.id
         Parallel.id += 1
 
+        self.speed = speed
         self.prediction = Prediction(speed * lmb, key)
         self.roundRobin = RoundRobin(speed * (1-lmb), key)
-
-        self.contributionPrediction = 0
-        self.contributionRoundRobin = 0
 
         self.currentStep = 0
         self.allTasks = {}
         self.finishedTasks = {}
+        
 
     def addTask(self, newTask):
         """
@@ -45,22 +42,21 @@ class Parallel:
             del self.allTasks[otherTask.id]
         except KeyError:
             pass
-
-    def run(self, step):
-        self.currentStep += step
-        
+    
+    def finishTasks(self):
         for task in self.prediction.finishedTasks.values():
             self.roundRobin.startTask(task)
             self.roundRobin.finishTask(task)
-            if task.id not in self.finishedTasks.keys():
-                self.contributionPrediction += 1
             self.finishedTasks[task.id] = task
         for task in self.roundRobin.finishedTasks.values():
             self.prediction.startTask(task)
             self.prediction.finishTask(task)
-            if task.id not in self.finishedTasks.keys():
-                self.contributionRoundRobin += 1
             self.finishedTasks[task.id] = task
+
+    def run(self, step):
+        self.currentStep += step
+
+        self.finishTasks()
 
         if not bool(self):
             self.prediction.run(step)
@@ -84,9 +80,9 @@ class Parallel:
         return bool(self.prediction) or bool(self.roundRobin)
 
     def __str__(self):
-        text = "Parallel {} \t total : {} \t current step : {}\t contribution Prediction {} \t contribution RoundRobin {}\n".format(self.id, len(self.roundRobin.allTasks), self.currentStep, self.contributionPrediction, self.contributionRoundRobin)
-        text += "\t" + self.prediction.name + str(self.prediction)[7:str(self.prediction).find('current time')] + '\n'
-        text += "\t" + self.roundRobin.name + str(self.roundRobin)[7:str(self.roundRobin).find('current time')] + '\n'
+        text = "Parallel {} \t total : {} \t current step : {}\n".format(self.id, len(self.roundRobin.allTasks), self.currentStep)
+        text += "\t" + self.prediction.name + str(self.prediction) + "\t speed : {}".format(self.prediction.speed) + '\n'
+        text += "\t" + self.roundRobin.name + str(self.roundRobin) + "\t speed : {}".format(self.roundRobin.initSpeed) + '\n'
         return text
 
     def __len__(self):
@@ -95,11 +91,12 @@ class Parallel:
 if __name__ == "__main__":
     from distribution import distrib
 
-    tasks = [Task(distrib) for _ in range(38)]
+    tasks = [Task(distrib) for _ in range(5)]
 
     m = Parallel()
 
     for task in tasks:
         m.addTask(task)
+        print(task)
 
     m.boot(1)

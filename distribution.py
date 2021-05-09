@@ -16,7 +16,7 @@ class Distribution:
             while round(sampled) + round(error) <= 0:
                 error = self.func[1](**self.params[1])
             
-            if self.func[2]: # generate random for arrivalTime
+            if self.func[2]: # generate random values for arrivalTime
                 AT = self.func[2](**self.params[2])
             
         return (round(sampled), round(error), round(AT))
@@ -29,4 +29,12 @@ def distrib1(*args, **kwargs):
 def distrib2(*args, **kwargs):
     return random.normalvariate(*args, **kwargs)
 
-distrib = Distribution(distrib1, {'lambd':.5}, distrib2, {'mu':0, 'sigma':1.5}, distrib1, {'lambd':.5})
+def distrib3(a,b):
+    return random.uniform(a,b)
+
+#distrib = Distribution(distrib1, {'lambd':.5}, distrib2, {'mu':0, 'sigma':1.5}, distrib1, {'lambd':.5})
+'''
+def getDistrib(a1,b1, sigma, a, b):
+    random.seed(1)
+    return Distribution(distrib3, {'a':a1,'b':b1}, distrib2, {'mu':(a1+b1)/2, 'sigma':sigma}, distrib3, {'a':a,'b':b})
+'''

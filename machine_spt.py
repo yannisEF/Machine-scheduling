@@ -22,7 +22,7 @@ class ShortestProcessingTime(Machine):
 if __name__ == "__main__":
     from distribution import distrib
 
-    tasks = [Task(distrib) for _ in range(3)]
+    tasks = [Task(distrib) for _ in range(4)]
 
     m = ShortestProcessingTime(key=lambda t: t.realLength)
 
