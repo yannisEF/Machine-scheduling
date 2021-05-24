@@ -1,13 +1,14 @@
 
-from task import Task
-from utils import clearPrint
 
+from utils import clearPrint
 
 class Machine:
     """
     A machine that can work on tasks
     """
+    
     id = 0
+    currentTime = 0
     def __init__(self, speed=1, key=lambda t: t.id, name="Machine"):
         self.id = Machine.id
         Machine.id += 1
@@ -16,7 +17,6 @@ class Machine:
         self.allTasks = {}
         self.workingTasks = {}
         self.pausedTasks = {}
-        
         self.notAvailableTasks = {}
         self.finishedTasks = {}
 
@@ -24,12 +24,21 @@ class Machine:
         self.speed = speed
 
         # The time of the machine
-        self.currentTime = 0
+        
 
         # A key to sort tasks in plot
         self.key = key
 
         # A progress bar
+        self.progressBar = None
+    
+    def reboot(self):
+        self.allTasks = {}
+        self.workingTasks = {}
+        self.pausedTasks = {}
+        self.notAvailableTasks = {}
+        self.finishedTasks = {}    
+        Machine.currentTime = 0
         self.progressBar = None
     
     def addTask(self, newTask):
@@ -64,10 +73,10 @@ class Machine:
     def startTask(self, newTask):
         """
         Adds a task to the working set
-        if currentTime is less than newTask's arrivalTime, startTask fails
+        if Machine.currentTime is less than newTask's arrivalTime, startTask fails
         """
-        if self.currentTime < newTask.arrivalTime:
-            raise RuntimeError("currentTime < arrivalTime")
+        if Machine.currentTime < newTask.arrivalTime:
+            raise RuntimeError("Machine.currentTime < arrivalTime")
         newTask.status = "working"
         newTask.paused = False
         self.workingTasks[newTask.id] = newTask
@@ -95,18 +104,20 @@ class Machine:
         """
         Adds a task to the set of finished tasks
         """
-        task.status = "finished"
-        task.timeFinished = self.currentTime
+        if task.finished == True:
+            
+        #task.status = "finished"
+        #task.timeFinished = Machine.currentTime
 
-        self.finishedTasks[task.id] = task
-        self.stopTask(task)
-    
-    def work(self, step):
+            self.finishedTasks[task.id] = task
+            self.stopTask(task)
+        
+    def work(self, step, timeCoef=1):
         """
         Work on a step of the machine
         """
         nextStep = step * self.speed
-        self.currentTime += step
+        Machine.currentTime += step*timeCoef
 
         toFinish = []
         for task in self.workingTasks.values():
@@ -124,7 +135,7 @@ class Machine:
                 raise RuntimeError()
             notAvailableTask = self.notAvailableTasks[notAvailableTaskid]
             
-            if self.currentTime >= notAvailableTask.arrivalTime:
+            if Machine.currentTime >= notAvailableTask.arrivalTime:
                 notAvailableTask.paused = True
                 notAvailableTask.status = "paused"
                 self.pausedTasks[notAvailableTask.id] = notAvailableTask
@@ -150,6 +161,8 @@ class Machine:
             if doPrint is True:    clearPrint(self)
         if doPrint is True:    clearPrint(self)
 
+        Machine.currentTime = 0
+
     def __bool__(self):
         """
         Returns if all tasks are finished
@@ -158,7 +171,7 @@ class Machine:
 
     def __str__(self):
         total, working, paused, finished = len(self.allTasks), len(self.workingTasks), len(self.pausedTasks), len(self.finishedTasks)
-        text = "Machine {} \t total : {} \t working : {} \t paused : {} \t finished : {} \t current time : {}\n".format(self.id, total, working, paused, finished, round(self.currentTime,2))
+        text = "Machine {} \t total : {} \t working : {} \t paused : {} \t finished : {} \t current time : {}\n".format(self.id, total, working, paused, finished, round(Machine.currentTime,2))
 
         for task in sorted(self.allTasks.values(), key=self.key):
             text += "\n\t" + str(task)
@@ -167,23 +180,3 @@ class Machine:
 
     def __len__(self):
         return len(self.allTasks)
-
-if __name__ == "__main__":
-    from distribution import distrib
-
-    tasks = [Task(distrib) for _ in range(38)]
-
-    m = Machine()
-    for task in tasks:
-        m.addTask(task)
-        m.startTask(task)
-
-    for k in range(3):
-        for task in random.sample(list(m.workingTasks.values()), 2):
-            m.pauseTask(task)
-        m.work(1)
-
-    print(m)
-    input()
-    m.key = lambda t: t.status
-    print(m)

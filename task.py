@@ -1,3 +1,6 @@
+
+from machine import Machine
+
 class Task:
     """
     A task which lengths are sampled from probability distributions
@@ -34,9 +37,12 @@ class Task:
         """
         Returns True if finished returns False if not
         """
-        if self.currentStep >= self.realLength:
-            self.timeFinished = self.currentStep
+        if self.currentStep >= self.realLength and self.finished != True:
+            
+            #self.timeFinished = self.currentStep c'est faux parce que currentStep != timeFinished quand on a la date de depart
+            self.timeFinished = Machine.currentTime
             self.finished = True
+            self.status = 'finished'
 
         return self.finished
     

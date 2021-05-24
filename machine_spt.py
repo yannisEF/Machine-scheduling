@@ -22,7 +22,7 @@ class ShortestProcessingTime(Machine):
 if __name__ == "__main__":
     from distribution import distrib
 
-    tasks = [Task(distrib) for _ in range(4)]
+    tasks = [Task(distrib) for _ in range(3)]
 
     m = ShortestProcessingTime(key=lambda t: t.realLength)
 
@@ -30,3 +30,6 @@ if __name__ == "__main__":
         m.addTask(task)
 
     m.boot(1)
+
+    for task in tasks:
+        print(task.timeFinished)

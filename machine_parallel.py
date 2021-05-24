@@ -4,12 +4,14 @@ from utils import clearPrint
 from machine_prediction import Prediction
 from machine_round_robin import RoundRobin
 
+from machine import Machine
+
 class Parallel:
     """
     Prediction + Round-robin, runs the two algorithms in parallel at a speed lmb and 1-lmb
     """
     id = 0
-    def __init__(self, speed=1, lmb=.5, key=lambda x: x.id, name="Parallel"):
+    def __init__(self, speed=1, lmb=0.5, key=lambda x: x.id, name="Parallel"):
         self.name = name
         self.id = Parallel.id
         Parallel.id += 1
@@ -21,7 +23,13 @@ class Parallel:
         self.currentStep = 0
         self.allTasks = {}
         self.finishedTasks = {}
-        
+
+    def reboot(self):
+        self.prediction.reboot()
+        self.roundRobin.reboot()
+        self.currentStep = 0
+        self.allTasks = {}
+        self.finishedTasks = {}    
 
     def addTask(self, newTask):
         """
@@ -45,22 +53,29 @@ class Parallel:
     
     def finishTasks(self):
         for task in self.prediction.finishedTasks.values():
-            self.roundRobin.startTask(task)
-            self.roundRobin.finishTask(task)
-            self.finishedTasks[task.id] = task
+            #self.roundRobin.startTask(task)
+            #self.roundRobin.finishTask(task)
+            if task.finished:
+                self.finishedTasks[task.id] = task
         for task in self.roundRobin.finishedTasks.values():
-            self.prediction.startTask(task)
-            self.prediction.finishTask(task)
-            self.finishedTasks[task.id] = task
+            #self.prediction.startTask(task)
+            #self.prediction.finishTask(task)
+            if task.finished:
+                self.finishedTasks[task.id] = task
+
 
     def run(self, step):
         self.currentStep += step
 
-        self.finishTasks()
+        #self.startTasks()
+
+        Machine.currentTime += step
 
         if not bool(self):
-            self.prediction.run(step)
-            self.roundRobin.run(step)
+            self.prediction.run(step,timeCoef=0)
+            self.roundRobin.run(step, timeCoef=0)
+
+        self.finishTasks()
 
         return bool(self)
 
@@ -75,6 +90,8 @@ class Parallel:
             if doPrint is True:    clearPrint(self)
             if progressBar is not None: progressBar.next()
         if doPrint is True:    clearPrint(self)
+
+        Machine.currentTime = 0
 
     def __bool__(self):
         return bool(self.prediction) or bool(self.roundRobin)
@@ -91,12 +108,15 @@ class Parallel:
 if __name__ == "__main__":
     from distribution import distrib
 
-    tasks = [Task(distrib) for _ in range(5)]
+    tasks = [Task(distrib) for _ in range(3)]
 
     m = Parallel()
 
     for task in tasks:
         m.addTask(task)
-        print(task)
 
     m.boot(1)
+
+    for task in tasks:
+        print(task.timeFinished)
+

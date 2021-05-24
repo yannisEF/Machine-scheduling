@@ -20,8 +20,9 @@ class Distribution:
                 AT = self.func[2](**self.params[2])
             
         return (round(sampled), round(error), round(AT))
-                
-        #return (round(sampled), round(error))
+    
+    def sample_error_only(self):
+        return round(self.func[1](**self.params[1]))
 
 def distrib1(*args, **kwargs):
     return random.expovariate(*args, **kwargs) + 1
@@ -29,12 +30,9 @@ def distrib1(*args, **kwargs):
 def distrib2(*args, **kwargs):
     return random.normalvariate(*args, **kwargs)
 
-def distrib3(a,b):
-    return random.uniform(a,b)
+def distrib3(*args, **kwargs):
+    return (random.paretovariate(1.1) + 1)*3.
 
-#distrib = Distribution(distrib1, {'lambd':.5}, distrib2, {'mu':0, 'sigma':1.5}, distrib1, {'lambd':.5})
-'''
-def getDistrib(a1,b1, sigma, a, b):
-    random.seed(1)
-    return Distribution(distrib3, {'a':a1,'b':b1}, distrib2, {'mu':(a1+b1)/2, 'sigma':sigma}, distrib3, {'a':a,'b':b})
-'''
+
+random.seed(1)
+distrib = Distribution(distrib3, {}, distrib2, {'mu':0, 'sigma':1.5}, distrib1, {'lambd':.2})

@@ -17,17 +17,17 @@ class RoundRobin(Machine):
             self.startTask(task)
             
             
-    def run(self, step):
+    def run(self, step,timeCoef=1):
         # if self.currentTime == 0:
         self._initRun()
 
         self.speed = self.initSpeed / max(1, len(self.workingTasks))
-        return self.work(step)
+        return self.work(step,timeCoef=timeCoef)
 
 if __name__ == "__main__":
     from distribution import distrib
 
-    tasks = [Task(distrib) for _ in range(5)]
+    tasks = [Task(distrib) for _ in range(3)]
 
     m = RoundRobin(key=lambda t: t.realLength)
 
@@ -35,3 +35,6 @@ if __name__ == "__main__":
         m.addTask(task)
 
     m.boot(1)
+
+    for task in tasks:
+        print(task.timeFinished)
