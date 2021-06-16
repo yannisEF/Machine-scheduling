@@ -12,7 +12,7 @@ class Prediction(Machine):
         Machine.__init__(self, speed, key, name) 
     
     def run(self, step):
-        if len(self.workingTasks) == 0:
+        if len(self.pausedTasks) != 0 and len(self.workingTasks) == 0:
             nextTask = sorted(list(self.pausedTasks.values()), key=lambda x:x.predLength)[0]
             self.startTask(nextTask)
         return self.work(step)

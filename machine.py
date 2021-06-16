@@ -19,6 +19,7 @@ class Machine:
         self.workingTasks = {}
         self.pausedTasks = {}
         self.finishedTasks = {}
+        self.unavailableTasks = {}
 
         # The machine's execution speed
         self.speed = speed
@@ -38,7 +39,10 @@ class Machine:
         """
         if newTask not in self.allTasks.values():
             self.allTasks[newTask.id] = newTask
-            self.pausedTasks[newTask.id] = newTask
+            if newTask.status == "unavailable":
+                self.unavailableTasks[newTask.id] = newTask
+            else:
+                self.pausedTasks[newTask.id] = newTask
 
     def removeTask(self, otherTask):
         """
@@ -55,7 +59,8 @@ class Machine:
         removeFromDic(self.workingTasks, otherTask)
         removeFromDic(self.pausedTasks, otherTask)
         removeFromDic(self.finishedTasks, otherTask)            
-        
+        removeFromDic(self.finishedTasks, otherTask)   
+
     def startTask(self, newTask):
         """
         Adds a task to the working set
@@ -65,6 +70,18 @@ class Machine:
         self.workingTasks[newTask.id] = newTask
         try:
             del self.pausedTasks[newTask.id]
+        except KeyError:
+            pass
+    
+    def makeAvailable(self, newTask):
+        """
+        Makes a task available
+        """
+        newTask.status = "paused"
+        newTask.paused = True
+        self.pausedTasks[newTask.id] = newTask
+        try:
+            del self.unavailableTasks[newTask.id]
         except KeyError:
             pass
 
@@ -100,6 +117,14 @@ class Machine:
         nextStep = step * self.speed
         self.currentTime += step
 
+        toMakeAvailable = []
+        for task in self.unavailableTasks.values():
+            if self.currentTime >= task.arrivalTime:
+                toMakeAvailable.append(task)
+        
+        for task in toMakeAvailable:
+            self.makeAvailable(task)
+
         toFinish = []
         for task in self.workingTasks.values():
             if task.forward(nextStep) is True:
@@ -108,7 +133,7 @@ class Machine:
         for task in toFinish:
             if self.progressBar is not None:    self.progressBar.next()
             self.finishTask(task)
-        
+
         return bool(self)
     
     def run(self, step):
@@ -155,14 +180,8 @@ if __name__ == "__main__":
     m = Machine()
     for task in tasks:
         m.addTask(task)
-        m.startTask(task)
-
-    for k in range(3):
-        for task in random.sample(list(m.workingTasks.values()), 2):
-            m.pauseTask(task)
-        m.work(1)
 
     print(m)
     input()
-    m.key = lambda t: t.status
+    m.key = lambda t: t.arrivalTime
     print(m)

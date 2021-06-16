@@ -13,14 +13,19 @@ class RoundRobin(Machine):
         self.initSpeed = speed
 
     def _initRun(self):
-        for task in self.allTasks.values():
+        toStart = []
+        for task in self.pausedTasks.values():
+            toStart.append(task)
+        
+        for task in toStart:
             self.startTask(task)
             
     def run(self, step):
-        if self.currentTime == 0:
-            self._initRun()
+        self._initRun()
 
-        self.speed = self.initSpeed / len(self.workingTasks)
+        if len(self.workingTasks) > 0:
+            self.speed = self.initSpeed / len(self.workingTasks)
+            return self.work(step)
         return self.work(step)
 
 if __name__ == "__main__":

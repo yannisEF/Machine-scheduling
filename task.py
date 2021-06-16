@@ -6,11 +6,11 @@ class Task:
     def __init__(self, distrib):
         self.currentStep = 0
 
-        self.realLength, self.error = distrib.sample()
+        self.realLength, self.error, self.arrivalTime = distrib.sample()
         self.predLength = self.realLength + self.error
 
         # paused, working, finished
-        self.status = "paused"
+        self.status = "paused" if self.arrivalTime in (0, None) else "unavailable"
         self.paused = True
 
         self.finished = False
@@ -24,7 +24,7 @@ class Task:
         Execute the task, returns if the task is finished or not
         """
         if self.paused is True:
-            raise RuntimeError("Task {} is paused and cannot run.".format(self.id))
+            raise RuntimeError("Task {} is {} and cannot run.".format(self.id, self.status))
         else:
             self.currentStep += step
             return self.hasFinished()
@@ -38,16 +38,10 @@ class Task:
             self.finished = True
 
         return self.finished
-    
-    def restart(self):
-        """
-        Restarts the task
-        """
-        self.status = "paused"
-        self.paused = True
-        self.finished = False
-        self.timeFinished = None
-        self.currentStep = 0
 
     def __str__(self):
-        return "Task {}   \t real length : {}   \t predicted length : {}   \t remaining : {}   \t status : {}".format(self.id, self.realLength, self.predLength, round(self.realLength - self.currentStep,2), self.status)
+        if self.arrivalTime in (0, None):
+            return "Task {}   \t real length : {}   \t predicted length : {}   \t remaining : {}   \t status : {}".format(
+                self.id, self.realLength, self.predLength, round(self.realLength - self.currentStep, 2), self.status)
+        return "Task {}   \t real length : {}   \t predicted length : {}   \t remaining : {}   \t arrival time : {} \t status : {}".format(
+            self.id, self.realLength, self.predLength, round(self.realLength - self.currentStep, 2), self.arrivalTime, self.status)
