@@ -8,8 +8,8 @@ class Prediction(Machine):
     """
     Prediction algorithm, executes the tasks one by one, shortest predicted length increasing
     """
-    def __init__(self, speed=1, key=lambda t: t.id, name="Prediction"):
-        Machine.__init__(self, speed, key, name) 
+    def __init__(self, speed=1, key=lambda t: t.id):
+        Machine.__init__(self, speed, key, name="PRED") 
     
     def run(self, step):
         if len(self.pausedTasks) != 0 and len(self.workingTasks) == 0:

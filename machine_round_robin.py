@@ -8,8 +8,8 @@ class RoundRobin(Machine):
     """
     Round-robin algorithm, executes all tasks equally at a reduced speed
     """
-    def __init__(self, speed=1, key=lambda t: t.id, name="Round-Robin"):
-        Machine.__init__(self, speed, key, name)
+    def __init__(self, speed=1, key=lambda t: t.id):
+        Machine.__init__(self, speed, key, name="RR")
         self.initSpeed = speed
 
     def _initRun(self):

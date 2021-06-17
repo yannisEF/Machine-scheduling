@@ -33,4 +33,4 @@ def distrib2(*args, **kwargs):
 def distrib3(*args, **kwargs):
     return round(np.random.poisson(size=1, **kwargs)[0])
 
-distrib = Distribution(distrib1, {'lambd':.5}, distrib2, {'mu':0, 'sigma':1.5}, distrib3, {'lam':5})
+distrib = Distribution(distrib1, {'lambd':.1}, distrib2, {'mu':0, 'sigma':4}, distrib3, {'lam':5})

@@ -11,8 +11,8 @@ class Parallel:
     Prediction + Round-robin, runs the two algorithms in parallel at a speed lmb and 1-lmb
     """
     id = 0
-    def __init__(self, speed=1, lmb=.5, key=lambda x: x.id, name="Parallel"):
-        self.name = name
+    def __init__(self, speed=1, lmb=.5, key=lambda x: x.id):
+        self.name = "PAR"
         self.id = Parallel.id
         Parallel.id += 1
 

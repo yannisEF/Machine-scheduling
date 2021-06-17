@@ -8,8 +8,8 @@ class ShortestProcessingTime(Machine):
     """
     SPT algorithm, executes the tasks one by one, shortest real length increasing
     """
-    def __init__(self, speed=1, key=lambda t: t.id, name="Shortest Processing Time"):
-        Machine.__init__(self, speed, key, name)
+    def __init__(self, speed=1, key=lambda t: t.id):
+        Machine.__init__(self, speed, key, name="SPT")
     
     def run(self, step):
         if len(self.pausedTasks) != 0 and len(self.workingTasks) == 0:

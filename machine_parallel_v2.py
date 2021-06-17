@@ -6,8 +6,10 @@ class Parallel_v2(Parallel):
     """
     Prediction + Round-Robin, dynamic lambda parameter
     """
-    def __init__(self, speed=1, lmb=.5, key=lambda x: x.id, name="Parallel_v2", coef=np.log(2)/2):
-        super().__init__(speed, lmb, key, name)
+    def __init__(self, speed=1, lmb=.5, key=lambda x: x.id, coef=np.log(2)/2):
+        super().__init__(speed, lmb, key)
+        self.name = "PAR_DYN"
+        
         self.historyLmb = [lmb]
         self.coef = coef
 
