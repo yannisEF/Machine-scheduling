@@ -3,11 +3,12 @@ class Task:
     A task which lengths are sampled from probability distributions
     """
     id = 0
-    def __init__(self, distrib):
+    def __init__(self, distrib, init_time=0):
         self.currentStep = 0
 
         self.realLength, self.error, self.arrivalTime = distrib.sample()
         self.predLength = self.realLength + self.error
+        self.arrivalTime += init_time
 
         # paused, working, finished
         self.status = "paused" if self.arrivalTime in (0, None) else "unavailable"

@@ -27,9 +27,10 @@ class Canvas(tk.Canvas):
     scroll_sensitivity = (10, 25)
     view_margin = (25, 25)
 
-    def __init__(self, master, machines=[]):
+    def __init__(self, master, main_application, machines=[]):
         super().__init__(master, **Canvas.parameters)
         self.master = master
+        self.main_application = main_application
 
         self.object_to_id = {}
         self.id_to_object = {}
@@ -56,7 +57,6 @@ class Canvas(tk.Canvas):
         self.bind("<Button-5>", lambda x: self.scroll_view(x, (0,-1)))
 
         self.focus_set()
-        self.grid(row=1, column=1)
 
     def add_machine(self, machine):
         self.machines.append(machine)
@@ -108,8 +108,11 @@ class Canvas(tk.Canvas):
             if task.status != "unavailable" and task not in self.machine_to_display[machine]:
                 self.machine_to_display[machine].append(task)
         for task in machine.finishedTasks.values():
-            self.machine_to_display[machine].remove(task)
-
+            try:
+                self.machine_to_display[machine].remove(task)
+            except ValueError:
+                pass
+            
         for task in self.machine_to_display[machine]:
             task_id = self.create_oval(
                 x1, y1, x2, y2, fill=Canvas.task_colors[task.status])
@@ -131,7 +134,7 @@ class Canvas(tk.Canvas):
         """
         Draws the lengths of a task, [real, predicted]
         """
-        
+
         x1, y1, x2, y2 = self.coords(self.object_to_id[task])
         text = "[{}, {}]".format(task.realLength, task.predLength)
 

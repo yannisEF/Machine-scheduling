@@ -1,16 +1,23 @@
 import tkinter as tk
 
-class Timeline(tk.Frame):
+from utils import reset_entry
+
+class Timeline(tk.LabelFrame):
+    """
+    Allows to speed up and pause application
+    """
+
     parameters = {}
 
-    speed_sensitivity = 1
+    speed_sensitivity = 2
 
-    def __init__(self, master):
-        super().__init__(master)
+    def __init__(self, master, main_application):
+        super().__init__(master, text="Play menu")
         self.master = master
+        self.main_application = main_application
 
         # Speed label
-        self.label_speed = tk.Label(self, text=self.master.speed)
+        self.label_speed = tk.Label(self, text=self.main_application.speed)
         self.label_speed.grid(row=0, column=2)
 
         # Speed buttons
@@ -30,26 +37,25 @@ class Timeline(tk.Frame):
         # Speed entry
         self.entry_speed = tk.Entry(self)
         self.entry_speed.bind("<Return>", self.set_speed)
-        self.entry_speed.grid(row=2, column=2)        
 
-        self.grid(row=2, column=1)
-    
+        self.entry_speed.grid(row=2, column=2)        
+  
     def update_speed_text(self):
-        self.label_speed['text'] = str(self.master.speed)
+        self.label_speed['text'] = str(round(self.main_application.speed/Timeline.speed_sensitivity))
 
     def increment_speed(self, direction):
-        self.master.change_speed(self.master.speed + direction * Timeline.speed_sensitivity)
+        self.main_application.change_speed(self.main_application.speed + direction * Timeline.speed_sensitivity)
         self.update_speed_text()
 
     def play_and_pause(self):
-        self.master.change_pause()
-        self.button_pause['text'] = "Play" if self.master.is_paused is True else "Pause"
+        self.main_application.change_pause()
+        self.button_pause['text'] = "Play" if self.main_application.is_paused is True else "Pause"
         self.update_speed_text()
 
     def set_speed(self, event):
         try:
-            self.master.change_speed(float(self.entry_speed.get()))
+            self.main_application.change_speed(float(self.entry_speed.get()))
         except ValueError:  pass
 
-        self.entry_speed.delete(0, len(self.entry_speed.get()))
+        reset_entry(self.entry_speed)
         self.update_speed_text()

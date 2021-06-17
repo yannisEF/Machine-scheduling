@@ -5,9 +5,9 @@ class Distribution:
     """
     A probability distribution
     """
-    def __init__(self, func1, params1, func2=None, params2=None, func3=lambda _=None:0, params3={}):
-        self.params = (params1, params2, params3)
-        self.func = (func1, func2, func3)
+    def __init__(self, func1, params1, func2=None, params2=None, func3=None, params3=None):
+        self.params = [params1, params2, params3]
+        self.func = [func1, func2, func3]
 
     def sample(self):
         sampled = self.func[0](**self.params[0])
@@ -17,7 +17,10 @@ class Distribution:
             while round(sampled) + round(error) <= 0:
                 error = self.func[1](**self.params[1])
         
-        arrival_time = self.func[2](**self.params[2])
+        if self.func[2] is not None and self.params[2] is not None:
+            arrival_time = self.func[2](**self.params[2])
+        else:
+            arrival_time = 0
 
         return (round(sampled), round(error), arrival_time)
 
