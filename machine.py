@@ -32,7 +32,10 @@ class Machine:
 
         # A progress bar
         self.progressBar = None
-    
+
+        # Average wait time, starts at 0
+        self.average_wait_time = 0
+
     def addTask(self, newTask):
         """
         Adds a task to the set of all tasks
@@ -108,6 +111,11 @@ class Machine:
         task.timeFinished = self.currentTime
 
         self.finishedTasks[task.id] = task
+        n = len(self.finishedTasks)
+        self.average_wait_time *= (n-1) / n
+        self.average_wait_time += self.currentTime / n
+        # not right time, maybe mistake in forward
+        
         self.stopTask(task)
     
     def work(self, step):

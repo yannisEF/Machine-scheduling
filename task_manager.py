@@ -5,6 +5,8 @@ from copy import deepcopy
 from task import Task
 from utils import reset_entry
 
+# Maybe add share button so that all generated tasks have same attributes in between machines
+
 class TaskManager(tk.LabelFrame):
     """
     Allows to add new tasks to machine
@@ -18,17 +20,19 @@ class TaskManager(tk.LabelFrame):
         self.main_application = main_application
 
         self.distribution = distribution
-        self.recipient = tk.StringVar()
+        self.recipient = tk.StringVar(value="All machines")
 
         # Frame containing the sending buttons and recipient
         self.frame_send = tk.Frame(self)
 
+        self.is_shared = tk.IntVar(value=0)
+        self.check_share = tk.Checkbutton(self.frame_send, onvalue=1, offvalue=0, text="Share tasks", variable=self.is_shared)
         self.available_machines = ["All machines"] + ["{} {}".format(m.name, m.id) for m in self.main_application.machines]
-        self.machine_chosen = None
-        self.menu_choose_machine = tk.OptionMenu(self.frame_send, self.recipient, *self.available_machines, command=self.set_machine_chosen)
+        self.menu_choose_machine = tk.OptionMenu(self.frame_send, self.recipient, *self.available_machines)
         self.button_send = tk.Button(self.frame_send, text="Add tasks", command=self.add_tasks)
         self.button_clear = tk.Button(self.frame_send, text="Clear tasks", command=self.clear_tasks)
 
+        self.check_share.grid(row=0, column=0)
         self.menu_choose_machine.grid(row=0, column=1)
         self.button_send.grid(row=0, column=2)
         self.button_clear.grid(row=0, column=3)
@@ -105,9 +109,6 @@ class TaskManager(tk.LabelFrame):
         for entry in self.entries_arrival:
             entry.configure(state="normal" if self.is_arrival.get() == 1 else "disable")
 
-    def set_machine_chosen(self, selection):
-        self.machine_chosen = selection
-
     def add_tasks(self):
         new_distribution = deepcopy(self.distribution)
 
@@ -128,10 +129,14 @@ class TaskManager(tk.LabelFrame):
                 new_distribution.func[2] = None
                 new_distribution.params[2] = None
 
-            machines = self.main_application.name_to_machine[self.machine_chosen]
+            machines = self.main_application.name_to_machine[self.recipient.get()]
             if type(machines) is not list: machines = [machines]
             for _ in range(int(self.entry_number.get())):
-                for m in machines:  self.main_application.add_task(m, Task(new_distribution, m.currentTime))
+                if self.is_shared.get() == 1:
+                    task = Task(new_distribution, machines[0].currentTime)
+                    for m in machines:  self.main_application.add_task(m, deepcopy(task))
+                else:
+                    for m in machines:  self.main_application.add_task(m, Task(new_distribution, m.currentTime))
 
         except ValueError:
             mbox.showinfo(title="Value Error", message="Please enter a correct value.")
@@ -140,7 +145,7 @@ class TaskManager(tk.LabelFrame):
 
     def clear_tasks(self):
         try:
-            machines = self.main_application.name_to_machine[self.machine_chosen]
+            machines = self.main_application.name_to_machine[self.recipient.get()]
             if type(machines) is not list: machines = [machines]
             for m in machines:
                 for task in list(m.allTasks.values()):
